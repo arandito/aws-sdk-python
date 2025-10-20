@@ -9,6 +9,7 @@ from smithy_aws_core.endpoints.standard_regional import (
     StandardRegionalEndpointsResolver as _RegionalResolver,
 )
 from smithy_aws_core.identity import AWSCredentialsIdentity, AWSIdentityProperties
+from smithy_core.aio.endpoints import StaticEndpointResolver
 from smithy_core.aio.interfaces import (
     ClientProtocol,
     ClientTransport,
@@ -52,40 +53,15 @@ from .models import (
 )
 
 
-_ServiceInterceptor = Union[
-    Interceptor[ApplyGuardrailInput, ApplyGuardrailOutput, Any, Any],
-    Interceptor[ConverseInput, ConverseOperationOutput, Any, Any],
-    Interceptor[ConverseStreamInput, ConverseStreamOperationOutput, Any, Any],
-    Interceptor[CountTokensOperationInput, CountTokensOutput, Any, Any],
-    Interceptor[GetAsyncInvokeInput, GetAsyncInvokeOutput, Any, Any],
-    Interceptor[InvokeModelInput, InvokeModelOutput, Any, Any],
-    Interceptor[
-        InvokeModelWithBidirectionalStreamOperationInput,
-        InvokeModelWithBidirectionalStreamOperationOutput,
-        Any,
-        Any,
-    ],
-    Interceptor[
-        InvokeModelWithResponseStreamInput,
-        InvokeModelWithResponseStreamOutput,
-        Any,
-        Any,
-    ],
-    Interceptor[ListAsyncInvokesInput, ListAsyncInvokesOutput, Any, Any],
-    Interceptor[StartAsyncInvokeInput, StartAsyncInvokeOutput, Any, Any],
-]
-
-
+_ServiceInterceptor = Union[Interceptor[ApplyGuardrailInput, ApplyGuardrailOutput, Any, Any], Interceptor[ConverseInput, ConverseOperationOutput, Any, Any], Interceptor[ConverseStreamInput, ConverseStreamOperationOutput, Any, Any], Interceptor[CountTokensOperationInput, CountTokensOutput, Any, Any], Interceptor[GetAsyncInvokeInput, GetAsyncInvokeOutput, Any, Any], Interceptor[InvokeModelInput, InvokeModelOutput, Any, Any], Interceptor[InvokeModelWithBidirectionalStreamOperationInput, InvokeModelWithBidirectionalStreamOperationOutput, Any, Any], Interceptor[InvokeModelWithResponseStreamInput, InvokeModelWithResponseStreamOutput, Any, Any], Interceptor[ListAsyncInvokesInput, ListAsyncInvokesOutput, Any, Any], Interceptor[StartAsyncInvokeInput, StartAsyncInvokeOutput, Any, Any]]
 @dataclass(init=False)
 class Config:
-    """Configuration for AmazonBedrockFrontendService."""
+    """Configuration for BedrockRuntimeClient."""
 
     auth_scheme_resolver: HTTPAuthSchemeResolver
     auth_schemes: dict[ShapeID, AuthScheme[Any, Any, Any, Any]]
     aws_access_key_id: str | None
-    aws_credentials_identity_resolver: (
-        IdentityResolver[AWSCredentialsIdentity, AWSIdentityProperties] | None
-    )
+    aws_credentials_identity_resolver: IdentityResolver[AWSCredentialsIdentity, AWSIdentityProperties] | None
     aws_secret_access_key: str | None
     aws_session_token: str | None
     endpoint_resolver: _EndpointResolver
@@ -105,10 +81,7 @@ class Config:
         auth_scheme_resolver: HTTPAuthSchemeResolver | None = None,
         auth_schemes: dict[ShapeID, AuthScheme[Any, Any, Any, Any]] | None = None,
         aws_access_key_id: str | None = None,
-        aws_credentials_identity_resolver: IdentityResolver[
-            AWSCredentialsIdentity, AWSIdentityProperties
-        ]
-        | None = None,
+        aws_credentials_identity_resolver: IdentityResolver[AWSCredentialsIdentity, AWSIdentityProperties] | None = None,
         aws_secret_access_key: str | None = None,
         aws_session_token: str | None = None,
         endpoint_resolver: _EndpointResolver | None = None,
@@ -124,75 +97,49 @@ class Config:
     ):
         """Constructor.
 
-        :param auth_scheme_resolver:
-             An auth scheme resolver that determines the auth scheme for each operation.
+        Args:
 
-        :param auth_schemes:
-             A map of auth scheme ids to auth schemes.
-
-        :param aws_access_key_id:
-             The identifier for a secret access key.
-
-        :param aws_credentials_identity_resolver:
-             Resolves AWS Credentials. Required for operations that use Sigv4 Auth.
-
-        :param aws_secret_access_key:
-             A secret access key that can be used to sign requests.
-
-        :param aws_session_token:
-             An access key ID that identifies temporary security credentials.
-
-        :param endpoint_resolver:
-             The endpoint resolver used to resolve the final endpoint per-operation based on
-             the configuration.
-
-        :param endpoint_uri:
-             A static URI to route requests to.
-
-        :param http_request_config:
-             Configuration for individual HTTP requests.
-
-        :param interceptors:
-             The list of interceptors, which are hooks that are called during the execution
-             of a request.
-
-        :param protocol:
-             The protocol to serialize and deserialize requests with.
-
-        :param region:
-             The AWS region to connect to. The configured region is used to determine the
-             service endpoint.
-
-        :param retry_strategy:
-             The retry strategy for issuing retry tokens and computing retry delays.
-
-        :param sdk_ua_app_id:
-             A unique and opaque application ID that is appended to the User-Agent header.
-
-        :param transport:
-             The transport to use to send requests (e.g. an HTTP client).
-
-        :param user_agent_extra:
-             Additional suffix to be added to the User-Agent header.
-
+            auth_scheme_resolver: An auth scheme resolver that determines the auth
+            scheme for each operation.
+            auth_schemes: A map of auth scheme ids to auth schemes.
+            aws_access_key_id: The identifier for a secret access key.
+            aws_credentials_identity_resolver: Resolves AWS Credentials. Required
+            for operations that use Sigv4 Auth.
+            aws_secret_access_key: A secret access key that can be used to sign
+            requests.
+            aws_session_token: An access key ID that identifies temporary security
+            credentials.
+            endpoint_resolver: The endpoint resolver used to resolve the final
+            endpoint per-operation based on the configuration.
+            endpoint_uri: A static URI to route requests to.
+            http_request_config: Configuration for individual HTTP requests.
+            interceptors: The list of interceptors, which are hooks that are called
+            during the execution of a request.
+            protocol: The protocol to serialize and deserialize requests with.
+            region: The AWS region to connect to. The configured region is used to
+            determine the service endpoint.
+            retry_strategy: The retry strategy for issuing retry tokens and
+            computing retry delays.
+            sdk_ua_app_id: A unique and opaque application ID that is appended to
+            the User-Agent header.
+            transport: The transport to use to send requests (e.g. an HTTP client).
+            user_agent_extra: Additional suffix to be added to the User-Agent
+            header.
         """
+
         self.auth_scheme_resolver = auth_scheme_resolver or HTTPAuthSchemeResolver()
         self.auth_schemes = auth_schemes or {
-            ShapeID("aws.auth#sigv4"): SigV4AuthScheme(service="bedrock")
+            ShapeID("aws.auth#sigv4"): SigV4AuthScheme(service="bedrock"),
         }
         self.aws_access_key_id = aws_access_key_id
         self.aws_credentials_identity_resolver = aws_credentials_identity_resolver
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_session_token = aws_session_token
-        self.endpoint_resolver = endpoint_resolver or _RegionalResolver(
-            endpoint_prefix="bedrock-runtime"
-        )
+        self.endpoint_resolver = endpoint_resolver or _RegionalResolver(endpoint_prefix="bedrock-runtime")
         self.endpoint_uri = endpoint_uri
         self.http_request_config = http_request_config
         self.interceptors = interceptors or []
-        self.protocol = protocol or RestJsonClientProtocol(
-            _SCHEMA_AMAZON_BEDROCK_FRONTEND_SERVICE
-        )
+        self.protocol = protocol or RestJsonClientProtocol(_SCHEMA_AMAZON_BEDROCK_FRONTEND_SERVICE)
         self.region = region
         self.retry_strategy = retry_strategy or SimpleRetryStrategy()
         self.sdk_ua_app_id = sdk_ua_app_id
@@ -204,12 +151,12 @@ class Config:
 
         Using this method ensures the correct key is used.
 
-        :param scheme: The auth scheme to add.
+        Args:
+            scheme: The auth scheme to add.
         """
-        self.auth_schemes[scheme.scheme_id] = scheme
 
+        self.auth_schemes[scheme.scheme_id] = scheme
 
 #
 # A callable that allows customizing the config object on each request.
-#
 Plugin: TypeAlias = Callable[[Config], None]

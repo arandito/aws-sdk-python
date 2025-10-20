@@ -1,0 +1,91 @@
+site_name: AWS SDK for Python
+site_description: Documentation for AWS SDK for Python
+site_url: https://awslabs.github.io/aws-sdk-python/
+watch: [README.md, CONTRIBUTING.md]
+copyright: Copyright &copy; 2025, Amazon Web Services, Inc
+
+repo_name: awslabs/aws-sdk-python
+repo_url: https://github.com/awslabs/aws-sdk-python
+
+theme:
+  name: material
+  logo: assets/aws-logo-white.png
+  favicon: assets/aws-logo-white.png
+  palette:
+    - scheme: default
+      primary: blue
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs/scripts/gen_client_nav.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_signature: true
+            members_order: source
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_object_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            group_by_category: true
+            show_category_heading: true
+            filters:
+              - "!^_"
+              - "!^deserialize"
+              - "!^serialize"
+
+validation:
+  omitted_files: ignore
+  not_found: ignore
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+extra:
+  social:
+  - icon: fontawesome/brands/github
+    link: https://github.com/awslabs/aws-sdk-python
+
+# Navigation is defined in docs/SUMMARY.md and dynamically enhanced
+# by the gen-files plugin for client documentation
