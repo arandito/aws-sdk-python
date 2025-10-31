@@ -2,7 +2,6 @@ name: Build and Deploy Documentation
 on:
   push:
     branches:
-      - add-mkdocs
       - test-docs
   workflow_dispatch:
 # Sets permissions for GitHub Pages deployment
@@ -49,7 +48,7 @@ jobs:
 
   deploy:
     # Only deploy on push to docs branch, not on PRs
-    if: github.event_name == 'push' && github.ref == 'refs/heads/add-mkdocs'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/test-docs'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
