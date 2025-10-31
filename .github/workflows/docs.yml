@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - add-mkdocs
+      - test-docs
   workflow_dispatch:
 # Sets permissions for GitHub Pages deployment
 permissions:
