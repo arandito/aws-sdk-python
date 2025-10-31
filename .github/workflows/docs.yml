@@ -1,69 +1,53 @@
 name: Build and Deploy Documentation
-
 on:
   push:
     branches:
-      - docs
-  pull_request:
-    branches:
-      - docs
+      - add-mkdocs
   workflow_dispatch:
-
 # Sets permissions for GitHub Pages deployment
 permissions:
   contents: read
   pages: write
   id-token: write
-
 # Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: false
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
+      
       - name: Install uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Create virtual environment
-        run: uv venv
-
-      - name: Install docs dependencies
-        run: |
-          source .venv/bin/activate
-          uv pip install --group docs
-
-      - name: Install editable client packages
-        run: |
-          source .venv/bin/activate
-          uv pip install -e clients/aws-sdk-bedrock-runtime
-          uv pip install -e clients/aws-sdk-transcribe-streaming
-
+      
+      - name: Sync client dependencies
+        working-directory: clients/aws-sdk-bedrock-runtime
+        run: uv sync
+      
       - name: Build documentation
+        working-directory: clients/aws-sdk-bedrock-runtime
         run: |
           source .venv/bin/activate
           mkdocs build -v
-
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./site
-
+          path: ./clients/aws-sdk-bedrock-runtime/site
+          
   deploy:
     # Only deploy on push to docs branch, not on PRs
-    if: github.event_name == 'push' && github.ref == 'refs/heads/docs'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/add-mkdocs'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
