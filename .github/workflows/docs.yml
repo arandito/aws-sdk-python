@@ -33,7 +33,8 @@ jobs:
 
       - name: Sync client dependencies
         working-directory: clients/aws-sdk-bedrock-runtime
-        run: uv sync
+        run: |
+          uv sync --group docs
 
       - name: Build documentation
         working-directory: clients/aws-sdk-bedrock-runtime
