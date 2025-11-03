@@ -5,4 +5,4 @@
 ## v0.0.1
 
 ### Features
-* Initial Client Release with support for current Amazon Transcribe Streaming operations.
+* Initial client release with support for current Amazon Transcribe Streaming operations.
