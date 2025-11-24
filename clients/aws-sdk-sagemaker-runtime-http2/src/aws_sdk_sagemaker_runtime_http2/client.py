@@ -27,19 +27,22 @@ logger = logging.getLogger(__name__)
 
 
 class SageMakerRuntimeHTTP2Client:
-    """
-     The Amazon SageMaker AI runtime HTTP/2 API.
-
-    :param config: Optional configuration for the client. Here you can set things like the
-        endpoint for HTTP services or auth credentials.
-
-    :param plugins: A list of callables that modify the configuration dynamically. These
-        can be used to set defaults, for example.
-    """
+    """The Amazon SageMaker AI runtime HTTP/2 API."""
 
     def __init__(
         self, config: Config | None = None, plugins: list[Plugin] | None = None
     ):
+        """
+        Constructor for `SageMakerRuntimeHTTP2Client`.
+
+        Args:
+            config:
+                Optional configuration for the client. Here you can set things like
+                the endpoint for HTTP services or auth credentials.
+            plugins:
+                A list of callables that modify the configuration dynamically. These
+                can be used to set defaults, for example.
+        """
         self._config = config or Config()
 
         client_plugins: list[Plugin] = [aws_user_agent_plugin, user_agent_plugin]
@@ -62,39 +65,52 @@ class SageMakerRuntimeHTTP2Client:
     ]:
         """
         Invokes a model endpoint with bidirectional streaming capabilities. This
-        operation establishes a persistent connection that allows you to send multiple
-        requests and receive streaming responses from the model in real-time.
+        operation establishes a persistent connection that allows you to send
+        multiple requests and receive streaming responses from the model in
+        real-time.
 
-        Bidirectional streaming is useful for interactive applications such as chatbots,
-        real-time translation, or any scenario where you need to maintain a
-        conversation-like interaction with the model. The connection remains open,
-        allowing you to send additional input and receive responses without establishing
-        a new connection for each request.
+        Bidirectional streaming is useful for interactive applications such as
+        chatbots, real-time translation, or any scenario where you need to
+        maintain a conversation-like interaction with the model. The connection
+        remains open, allowing you to send additional input and receive
+        responses without establishing a new connection for each request.
 
-        For an overview of Amazon SageMaker AI, see `How It Works <https://docs.aws.amazon.com/sagemaker/latest/dg/how-it-works.html>`_
-        .
+        For an overview of Amazon SageMaker AI, see [How It
+        Works](https://docs.aws.amazon.com/sagemaker/latest/dg/how-it-works.html).
 
-        Amazon SageMaker AI strips all POST headers except those supported by the API.
-        Amazon SageMaker AI might add additional headers. You should not rely on the
-        behavior of headers outside those enumerated in the request syntax.
+        Amazon SageMaker AI strips all POST headers except those supported by
+        the API. Amazon SageMaker AI might add additional headers. You should
+        not rely on the behavior of headers outside those enumerated in the
+        request syntax.
 
-        Calls to ``InvokeEndpointWithBidirectionalStream`` are authenticated by using Amazon Web Services Signature Version 4. For information, see `Authenticating Requests (Amazon Web Services Signature Version 4) <https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html>`_
+        Calls to `InvokeEndpointWithBidirectionalStream` are authenticated by
+        using Amazon Web Services Signature Version 4. For information, see
+        [Authenticating Requests (Amazon Web Services Signature Version
+        4)](https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html)
         in the *Amazon S3 API Reference*.
 
-        The bidirectional stream maintains the connection until either the client closes
-        it or the model indicates completion. Each request and response in the stream is
-        sent as an event with optional headers for data type and completion state.
+        The bidirectional stream maintains the connection until either the
+        client closes it or the model indicates completion. Each request and
+        response in the stream is sent as an event with optional headers for
+        data type and completion state.
 
-        .. note::
-            Endpoints are scoped to an individual account, and are not public. The URL does
-            not contain the account ID, but Amazon SageMaker AI determines the account ID
-            from the authentication token that is supplied by the caller.
+        Note:
+            Endpoints are scoped to an individual account, and are not public. The
+            URL does not contain the account ID, but Amazon SageMaker AI determines
+            the account ID from the authentication token that is supplied by the
+            caller.
 
-        :param input: The operation's input.
+        Args:
+            input:
+                An instance of `InvokeEndpointWithBidirectionalStreamInput`.
+            plugins:
+                A list of callables that modify the configuration dynamically.
+                Changes made by these plugins only apply for the duration of the
+                operation execution and will not affect any other operation
+                invocations.
 
-        :param plugins: A list of callables that modify the configuration dynamically.
-            Changes made by these plugins only apply for the duration of the operation
-            execution and will not affect any other operation invocations.
+        Returns:
+            A `DuplexEventStream` for bidirectional streaming.
         """
         operation_plugins: list[Plugin] = []
         if plugins:
