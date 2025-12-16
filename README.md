@@ -1,5 +1,4 @@
 ## AWS SDK for Python
-<!-- --8<-- [start:docs] -->
 [![Apache 2 licensed][apache-badge]][apache-url]
 
 [apache-badge]: https://img.shields.io/badge/license-APACHE2-blue.svg
@@ -30,10 +29,9 @@ features we are actively working on.
 You can provide feedback or report a bug by submitting an [issue](https://github.com/awslabs/aws-sdk-python/issues/new/choose).
 This is the preferred mechanism to give feedback so that other users can engage in the conversation, +1 issues, etc.
 
-<!-- --8<-- [end:docs] -->
 ## Security
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+See [CONTRIBUTING](https://github.com/awslabs/aws-sdk-python/blob/develop/CONTRIBUTING.md#security-issue-notifications) for more information.
 
 ## License
 
