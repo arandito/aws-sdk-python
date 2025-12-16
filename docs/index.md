@@ -1,3 +1,3 @@
 # AWS SDK for Python
 
---8<-- "README.md:docs"
+--8<-- "README.md:2"
