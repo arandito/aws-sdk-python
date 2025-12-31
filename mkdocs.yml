@@ -1,11 +1,8 @@
 site_name: AWS SDK for Python
 site_description: Documentation for AWS SDK for Python Clients
 
-repo_name: awslabs/aws-sdk-pythons
+repo_name: awslabs/aws-sdk-python
 repo_url: https://github.com/awslabs/aws-sdk-python
-
-exclude_docs: |
-  README.md
 
 hooks:
   - docs/hooks/copyright.py

@@ -24,6 +24,7 @@ logger = logging.getLogger("generate_all_doc_stubs")
 
 DEFAULT_CPU_COUNT = 1
 
+
 @dataclass
 class ClientInfo:
     """Information about a client for documentation generation."""
@@ -76,7 +77,9 @@ def generate_all_doc_stubs(clients: list[ClientInfo], docs_dir: Path) -> bool:
     top_level_docs = docs_dir / "clients"
     max_workers = os.cpu_count() or DEFAULT_CPU_COUNT
 
-    logger.info(f"Generating doc stubs for {len(clients)} clients using {max_workers} workers...")
+    logger.info(
+        f"Generating doc stubs for {len(clients)} clients using {max_workers} workers..."
+    )
 
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {
@@ -105,7 +108,9 @@ def generate_all_doc_stubs(clients: list[ClientInfo], docs_dir: Path) -> bool:
     return True
 
 
-def _generate_doc_stub(client_dir: Path, service_name: str, output_dir: Path) -> tuple[str, bool]:
+def _generate_doc_stub(
+    client_dir: Path, service_name: str, output_dir: Path
+) -> tuple[str, bool]:
     """
     Generate doc stubs for a single client.
 
@@ -154,22 +159,26 @@ def generate_clients_index(clients: list[ClientInfo], docs_dir: Path) -> bool:
         grouped[letter].append(client)
 
     # Tab for all services
-    lines.append("=== \"All\"")
+    lines.append('=== "All"')
     lines.append("")
     lines.append("    | Service | Package Name |")
     lines.append("    |----------|--------------|")
     for client in clients:
-        lines.append(f"    | **[{client.service_name}]({client.path_name}/index.md)** | `{client.package_name}` |")
+        lines.append(
+            f"    | **[{client.service_name}]({client.path_name}/index.md)** | `{client.package_name}` |"
+        )
     lines.append("")
 
     # Individual letter tabs
     for letter in sorted(grouped.keys()):
-        lines.append(f"=== \"{letter}\"")
+        lines.append(f'=== "{letter}"')
         lines.append("")
         lines.append("    | Service | Package Name |")
         lines.append("    |----------|--------------|")
         for client in grouped[letter]:
-            lines.append(f"    | **[{client.service_name}]({client.path_name}/index.md)** | `{client.package_name}` |")
+            lines.append(
+                f"    | **[{client.service_name}]({client.path_name}/index.md)** | `{client.package_name}` |"
+            )
         lines.append("")
 
     index_path = docs_dir / "clients" / "index.md"
