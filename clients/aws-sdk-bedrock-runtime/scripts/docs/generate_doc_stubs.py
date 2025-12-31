@@ -37,6 +37,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger("generate_doc_stubs")
 
+ENUM_BASE_CLASSES = ("StrEnum", "IntEnum")
+ERROR_BASE_CLASSES = ("ServiceError", "ModeledError")
+
 
 class StreamType(Enum):
     """Type of event stream for operations."""
@@ -56,7 +59,7 @@ class StreamType(Enum):
         return descriptions[self]
 
 
-@dataclass(frozen=True)
+@dataclass
 class TypeInfo:
     """Information about a type (structure, enum, error, config, plugin)."""
 
@@ -149,7 +152,7 @@ class DocStubGenerator:
         package = griffe.load(package_name)
 
         # Ensure required modules exist
-        required = ["client", "config", "models"]
+        required = ("client", "config", "models")
         missing = [name for name in required if not package.modules.get(name)]
         if missing:
             raise ValueError(f"Missing required modules in {package_name}: {', '.join(missing)}")
@@ -292,12 +295,12 @@ class DocStubGenerator:
             elif member.is_class:
                 structures.append(TypeInfo(name=member.name, module_path=member.path))
 
-        duplicates = set()
+        duplicates = []
         for structure in structures:
             if self._is_operation_io_type(structure.name, operations) or self._is_union_member(
                 structure.name, unions
             ):
-                duplicates.add(structure)
+                duplicates.append(structure)
 
         structures = [struct for struct in structures if struct not in duplicates]
 
@@ -346,8 +349,7 @@ class DocStubGenerator:
         if not isinstance(member, Class):
             return False
         return any(
-            isinstance(base, ExprName) and base.name in ("StrEnum", "IntEnum")
-            for base in member.bases
+            isinstance(base, ExprName) and base.name in ENUM_BASE_CLASSES for base in member.bases
         )
 
     def _is_error(self, member: Object | Alias) -> TypeGuard[Class]:
@@ -355,8 +357,7 @@ class DocStubGenerator:
         if not isinstance(member, Class):
             return False
         return any(
-            isinstance(base, ExprName) and base.name in ("ServiceError", "ModeledError")
-            for base in member.bases
+            isinstance(base, ExprName) and base.name in ERROR_BASE_CLASSES for base in member.bases
         )
 
     def _is_operation_io_type(self, type_name: str, operations: list[OperationInfo]) -> bool:
@@ -378,9 +379,7 @@ class DocStubGenerator:
                 client_info.models.structures, "structures", "Structure Class"
             )
             self._generate_type_stubs(client_info.models.errors, "errors", "Error Class")
-            self._generate_type_stubs(
-                client_info.models.enums, "enums", "Enum Class", ["members: true"]
-            )
+            self._generate_type_stubs(client_info.models.enums, "enums", "Enum Class", members=True)
             self._generate_union_stubs(client_info.models.unions)
         except OSError as e:
             logger.error(f"Failed to write documentation files: {e}")
@@ -389,19 +388,19 @@ class DocStubGenerator:
 
     def _generate_index(self, client_info: ClientInfo) -> None:
         """Generate the main index.md file."""
-        lines = []
-        lines.append(f"# {self.service_name}")
-        lines.append("")
-        lines.append("## Client")
-        lines.append("")
-        lines.append(f"::: {client_info.module_path}")
-        lines.append("    options:")
-        lines.append("        members: false")
-        lines.append("        heading_level: 3")
-        lines.append("        merge_init_into_class: true")
-        lines.append("        docstring_options:")
-        lines.append("            ignore_init_summary: true")
-        lines.append("")
+        lines = [
+            f"# {self.service_name}",
+            "",
+            "## Client",
+            "",
+            *self._mkdocs_directive(
+                client_info.module_path,
+                members=False,
+                merge_init_into_class=True,
+                ignore_init_summary=True,
+            ),
+            "",
+        ]
 
         # Operations section
         if client_info.operations:
@@ -412,18 +411,19 @@ class DocStubGenerator:
             lines.append("")
 
         # Configuration section
-        lines.append("## Configuration")
-        lines.append("")
-        lines.append(f"::: {client_info.config.module_path}")
-        lines.append("    options:")
-        lines.append("        heading_level: 3")
-        lines.append("        merge_init_into_class: true")
-        lines.append("        docstring_options:")
-        lines.append("            ignore_init_summary: true")
-        lines.append("")
-        lines.append(f"::: {client_info.plugin.module_path}")
-        lines.append("    options:")
-        lines.append("        heading_level: 3")
+        lines.extend(
+            [
+                "## Configuration",
+                "",
+                *self._mkdocs_directive(
+                    client_info.config.module_path,
+                    merge_init_into_class=True,
+                    ignore_init_summary=True,
+                ),
+                "",
+                *self._mkdocs_directive(client_info.plugin.module_path),
+            ]
+        )
 
         models = client_info.models
 
@@ -452,56 +452,59 @@ class DocStubGenerator:
     def _generate_operation_stubs(self, operations: list[OperationInfo]) -> None:
         """Generate operation documentation files."""
         for op in operations:
-            lines = []
-            lines.append(f"# {op.name}")
-            lines.append("")
-
-            # Operation section
-            lines.append("## Operation")
-            lines.append("")
-            lines.append(f"::: {op.module_path}")
-            lines.append("    options:")
-            lines.append("        heading_level: 3")
-            lines.append("")
-
-            # Input section
-            lines.append("## Input")
-            lines.append("")
-            lines.append(f"::: {op.input.module_path}")
-            lines.append("    options:")
-            lines.append("        heading_level: 3")
-            lines.append("")
-
-            # Output section - handle all stream types
-            lines.append("## Output")
-            lines.append("")
+            lines = [
+                f"# {op.name}",
+                "",
+                "## Operation",
+                "",
+                *self._mkdocs_directive(op.module_path),
+                "",
+                "## Input",
+                "",
+                *self._mkdocs_directive(op.input.module_path),
+                "",
+                "## Output",
+                "",
+            ]
 
             if op.stream_type:
-                lines.append(f"This operation returns {op.stream_type.description}.")
-                lines.append("")
-                lines.append("### Event Stream Structure")
-                lines.append("")
+                lines.extend(
+                    [
+                        f"This operation returns {op.stream_type.description}.",
+                        "",
+                        "### Event Stream Structure",
+                        "",
+                    ]
+                )
 
                 if op.event_input_type:
-                    lines.append("#### Input Event Type")
-                    lines.append("")
-                    lines.append(f"[`{op.event_input_type}`](../unions/{op.event_input_type}.md)")
-                    lines.append("")
+                    lines.extend(
+                        [
+                            "#### Input Event Type",
+                            "",
+                            f"[`{op.event_input_type}`](../unions/{op.event_input_type}.md)",
+                            "",
+                        ]
+                    )
                 if op.event_output_type:
-                    lines.append("#### Output Event Type")
-                    lines.append("")
-                    lines.append(f"[`{op.event_output_type}`](../unions/{op.event_output_type}.md)")
-                    lines.append("")
+                    lines.extend(
+                        [
+                            "#### Output Event Type",
+                            "",
+                            f"[`{op.event_output_type}`](../unions/{op.event_output_type}.md)",
+                            "",
+                        ]
+                    )
 
-                lines.append("### Initial Response Structure")
-                lines.append("")
-                lines.append(f"::: {op.output.module_path}")
-                lines.append("    options:")
-                lines.append("        heading_level: 4")
+                lines.extend(
+                    [
+                        "### Initial Response Structure",
+                        "",
+                        *self._mkdocs_directive(op.output.module_path, heading_level=4),
+                    ]
+                )
             else:
-                lines.append(f"::: {op.output.module_path}")
-                lines.append("    options:")
-                lines.append("        heading_level: 3")
+                lines.extend(self._mkdocs_directive(op.output.module_path))
 
             output_path = self.output_dir / "operations" / f"{op.name}.md"
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -514,7 +517,7 @@ class DocStubGenerator:
         items: list[TypeInfo],
         category: str,
         section_title: str,
-        extra_options: list[str] | None = None,
+        members: bool | None = None,
     ) -> None:
         """Generate documentation files for a category of types."""
         for item in items:
@@ -522,12 +525,8 @@ class DocStubGenerator:
                 f"# {item.name}",
                 "",
                 f"## {section_title}",
-                f"::: {item.module_path}",
-                "    options:",
-                "        heading_level: 3",
+                *self._mkdocs_directive(item.module_path, members=members),
             ]
-            if extra_options:
-                lines.extend(f"        {opt}" for opt in extra_options)
 
             output_path = self.output_dir / category / f"{item.name}.md"
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -538,29 +537,61 @@ class DocStubGenerator:
     def _generate_union_stubs(self, unions: list[UnionInfo]) -> None:
         """Generate union documentation files."""
         for union in unions:
-            lines = []
-            lines.append(f"# {union.name}")
-            lines.append("")
-            lines.append("## Union Type")
-            lines.append(f"::: {union.module_path}")
-            lines.append("    options:")
-            lines.append("        heading_level: 3")
-            lines.append("")
+            lines = [
+                f"# {union.name}",
+                "",
+                "## Union Type",
+                *self._mkdocs_directive(union.module_path),
+                "",
+            ]
 
             # Add union members
             if union.members:
                 lines.append("## Union Member Types")
                 for member in union.members:
                     lines.append("")
-                    lines.append(f"::: {member.module_path}")
-                    lines.append("    options:")
-                    lines.append("        heading_level: 3")
+                    lines.extend(self._mkdocs_directive(member.module_path))
 
             output_path = self.output_dir / "unions" / f"{union.name}.md"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(self._breadcrumb("Unions", union.name) + "\n".join(lines))
 
         logger.info(f"Wrote {len(unions)} union files")
+
+    def _mkdocs_directive(
+        self,
+        module_path: str,
+        heading_level: int = 3,
+        members: bool | None = None,
+        merge_init_into_class: bool = False,
+        ignore_init_summary: bool = False,
+    ) -> list[str]:
+        """Generate mkdocstrings directive lines for a module path.
+
+        Args:
+            module_path: The Python module path for the directive.
+            heading_level: The heading level for rendered documentation.
+            members: Whether to show members (None omits the option).
+            merge_init_into_class: Whether to merge __init__ docstring into class docs.
+            ignore_init_summary: Whether to ignore init summary in docstrings.
+
+        Returns:
+            List of strings representing the mkdocstrings directive.
+        """
+        lines = [
+            f"::: {module_path}",
+            "    options:",
+            f"        heading_level: {heading_level}",
+        ]
+        if members is not None:
+            lines.append(f"        members: {'true' if members else 'false'}")
+        if merge_init_into_class:
+            lines.append("        merge_init_into_class: true")
+        if ignore_init_summary:
+            lines.append("        docstring_options:")
+            lines.append("            ignore_init_summary: true")
+
+        return lines
 
     def _breadcrumb(self, category: str, name: str) -> str:
         """Generate a breadcrumb navigation element."""

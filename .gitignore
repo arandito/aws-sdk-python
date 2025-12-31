@@ -11,8 +11,9 @@ docs/clients/
 .venv
 venv
 
-# Python bytecode cache
+# Caches
 __pycache__/
+.ruff_cache/
 
 # Dependency lock file for uv
 uv.lock

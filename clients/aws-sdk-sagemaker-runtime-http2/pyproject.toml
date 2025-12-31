@@ -33,8 +33,9 @@ test = [
     "pytest>=7.2.0,<8.0.0",
     "pytest-asyncio>=0.20.3,<0.21.0"
 ]
+
 docs = [
-    "mkdocs~=1.6.1",
+    "mkdocs==1.6.1",
     "mkdocs-material==9.7.0",
     "mkdocstrings[python]==1.0.0"
 ]
@@ -62,4 +63,5 @@ ignore = ["F841"]
 skip-magic-trailing-comma = true
 
 [tool.pytest.ini_options]
-# python_classes = ["!Test"]
+python_classes = ["!Test"]
+asyncio_mode = "auto"
