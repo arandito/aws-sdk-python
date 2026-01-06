@@ -30,7 +30,7 @@ def generate_nav(repo_root: Path) -> bool:
     Returns:
         True if navigation was generated successfully, False otherwise.
     """
-    logger.info("Generating navigation structure...")
+    logger.info("⏳ Generating navigation structure...")
 
     clients_dir = repo_root / "clients"
     if not clients_dir.exists():

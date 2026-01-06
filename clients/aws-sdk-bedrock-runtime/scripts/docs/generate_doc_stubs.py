@@ -447,7 +447,7 @@ class DocStubGenerator:
         content = "\n".join(lines)
         output_path.write_text(content)
 
-        logger.info("Wrote client index file!")
+        logger.info("Wrote client index file")
 
     def _generate_operation_stubs(self, operations: list[OperationInfo]) -> None:
         """Generate operation documentation files."""
@@ -510,7 +510,7 @@ class DocStubGenerator:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(self._breadcrumb("Operations", op.name) + "\n".join(lines))
 
-        logger.info(f"Wrote {len(operations)} operation files")
+        logger.info(f"Wrote {len(operations)} operation file(s)")
 
     def _generate_type_stubs(
         self,
@@ -532,7 +532,7 @@ class DocStubGenerator:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(self._breadcrumb(category.title(), item.name) + "\n".join(lines))
 
-        logger.info(f"Wrote {len(items)} {category} files")
+        logger.info(f"Wrote {len(items)} {category} file(s)")
 
     def _generate_union_stubs(self, unions: list[UnionInfo]) -> None:
         """Generate union documentation files."""
@@ -556,7 +556,7 @@ class DocStubGenerator:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(self._breadcrumb("Unions", union.name) + "\n".join(lines))
 
-        logger.info(f"Wrote {len(unions)} union files")
+        logger.info(f"Wrote {len(unions)} union file(s)")
 
     def _mkdocs_directive(
         self,

@@ -78,7 +78,7 @@ def generate_all_doc_stubs(clients: list[ClientInfo], docs_dir: Path) -> bool:
     max_workers = os.cpu_count() or DEFAULT_CPU_COUNT
 
     logger.info(
-        f"Generating doc stubs for {len(clients)} clients using {max_workers} workers..."
+        f"⏳ Generating doc stubs for {len(clients)} clients using {max_workers} workers..."
     )
 
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
@@ -96,9 +96,9 @@ def generate_all_doc_stubs(clients: list[ClientInfo], docs_dir: Path) -> bool:
         for future in as_completed(futures):
             service_name, success = future.result()
             if success:
-                logger.info(f"✅ Generated docs stubs for {service_name}")
+                logger.info(f"✅ Generated doc stubs for {service_name}")
             else:
-                logger.error(f"❌ Failed to generate docs stubs for {service_name}")
+                logger.error(f"❌ Failed to generate doc stubs for {service_name}")
                 failed.append(service_name)
 
     if failed:
