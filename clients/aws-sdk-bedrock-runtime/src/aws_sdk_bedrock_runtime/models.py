@@ -5873,9 +5873,7 @@ class InferenceConfiguration:
 
 @dataclass(kw_only=True)
 class ErrorBlock:
-    """
-    A block containing error information when content processing fails.
-    """
+    """A block containing error information when content processing fails."""
 
     message: str | None = None
     """
@@ -5934,18 +5932,15 @@ class AudioFormat(StrEnum):
 
 @dataclass(kw_only=True)
 class S3Location:
-    """
-    A storage location in an Amazon S3 bucket.
-    """
+    """A storage location in an Amazon S3 bucket."""
 
     uri: str
-    """
-    An object URI starting with ``s3://``.
-    """
+    """An object URI starting with `s3://`."""
 
     bucket_owner: str | None = None
     """
-    If the bucket belongs to another AWS account, specify that account's ID.
+    If the bucket belongs to another AWS account, specify that account's
+    ID.
     """
 
     def serialize(self, serializer: ShapeSerializer):
@@ -5985,9 +5980,7 @@ class S3Location:
 
 @dataclass
 class AudioSourceBytes:
-    """
-    Audio data encoded in base64.
-    """
+    """Audio data encoded in base64."""
 
     value: bytes
 
@@ -6005,9 +5998,9 @@ class AudioSourceBytes:
 @dataclass
 class AudioSourceS3Location:
     """
-    A reference to audio data stored in an Amazon S3 bucket. To see which models
-    support S3 uploads, see `Supported models and features for Converse <https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html>`_
-    .
+    A reference to audio data stored in an Amazon S3 bucket. To see which
+    models support S3 uploads, see [Supported models and features for
+    Converse](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html).
     """
 
     value: S3Location
@@ -6025,7 +6018,8 @@ class AudioSourceS3Location:
 
 @dataclass
 class AudioSourceUnknown:
-    """Represents an unknown variant.
+    """
+    Represents an unknown variant.
 
     If you receive this value, you will need to update your library to receive the
     parsed value.
@@ -6047,7 +6041,6 @@ class AudioSourceUnknown:
 
 
 AudioSource = Union[AudioSourceBytes | AudioSourceS3Location | AudioSourceUnknown]
-
 """
 The source of audio data, which can be provided either as raw bytes or a
 reference to an S3 location.
@@ -6090,25 +6083,26 @@ class _AudioSourceDeserializer:
 @dataclass(kw_only=True)
 class AudioBlock:
     """
-    An audio content block that contains audio data in various supported formats.
+    An audio content block that contains audio data in various supported
+    formats.
     """
 
     format: str
     """
-    The format of the audio data, such as MP3, WAV, FLAC, or other supported audio
-    formats.
+    The format of the audio data, such as MP3, WAV, FLAC, or other supported
+    audio formats.
     """
 
     source: AudioSource = field(repr=False)
     """
-    The source of the audio data, which can be provided as raw bytes or an S3
-    location.
+    The source of the audio data, which can be provided as raw bytes or an
+    S3 location.
     """
 
     error: ErrorBlock | None = field(repr=False, default=None)
     """
-    Error information if the audio block could not be processed or contains invalid
-    data.
+    Error information if the audio block could not be processed or contains
+    invalid data.
     """
 
     def serialize(self, serializer: ShapeSerializer):
@@ -8024,8 +8018,8 @@ class ImageBlock:
 
     error: ErrorBlock | None = field(repr=False, default=None)
     """
-    Error information if the image block could not be processed or contains invalid
-    data.
+    Error information if the image block could not be processed or contains
+    invalid data.
     """
 
     def serialize(self, serializer: ShapeSerializer):
@@ -9011,9 +9005,7 @@ class ContentBlockVideo:
 
 @dataclass
 class ContentBlockAudio:
-    """
-    An audio content block containing audio data in the conversation.
-    """
+    """An audio content block containing audio data in the conversation."""
 
     value: AudioBlock
 
@@ -9030,9 +9022,7 @@ class ContentBlockAudio:
 
 @dataclass
 class ContentBlockToolUse:
-    """
-    Information about a tool use request from a model.
-    """
+    """Information about a tool use request from a model."""
 
     value: ToolUseBlock
 
@@ -12035,19 +12025,15 @@ class CitationsDelta:
 @dataclass(kw_only=True)
 class ImageBlockDelta:
     """
-    A streaming delta event that contains incremental image data during streaming
-    responses.
+    A streaming delta event that contains incremental image data during
+    streaming responses.
     """
 
     source: ImageSource | None = field(repr=False, default=None)
-    """
-    The incremental image source data for this delta event.
-    """
+    """The incremental image source data for this delta event."""
 
     error: ErrorBlock | None = field(repr=False, default=None)
-    """
-    Error information if this image delta could not be processed.
-    """
+    """Error information if this image delta could not be processed."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_IMAGE_BLOCK_DELTA, self)
@@ -12088,9 +12074,7 @@ class ImageBlockDelta:
 
 @dataclass
 class ReasoningContentBlockDeltaText:
-    """
-    The reasoning that the model used to return the output.
-    """
+    """The reasoning that the model used to return the output."""
 
     value: str
 
@@ -12269,8 +12253,8 @@ class ToolResultBlockDeltaText:
 @dataclass
 class ToolResultBlockDeltaJson:
     """
-    The JSON schema for the tool result content block. see `JSON Schema Reference <https://json-schema.org/understanding-json-schema/reference>`_
-    .
+    The JSON schema for the tool result content block. see [JSON Schema
+    Reference](https://json-schema.org/understanding-json-schema/reference).
     """
 
     value: Document
@@ -12319,7 +12303,6 @@ class ToolResultBlockDeltaUnknown:
 ToolResultBlockDelta = Union[
     ToolResultBlockDeltaText | ToolResultBlockDeltaJson | ToolResultBlockDeltaUnknown
 ]
-
 """
 Contains incremental updates to tool results information during
 streaming responses. This allows clients to build up tool results data
@@ -12532,9 +12515,7 @@ class ContentBlockDeltaCitation:
 
 @dataclass
 class ContentBlockDeltaImage:
-    """
-    A streaming delta event containing incremental image data.
-    """
+    """A streaming delta event containing incremental image data."""
 
     value: ImageBlockDelta
 
@@ -12682,13 +12663,14 @@ class ContentBlockDeltaEvent:
 @dataclass(kw_only=True)
 class ImageBlockStart:
     """
-    The initial event in a streaming image block that indicates the start of image
-    content.
+    The initial event in a streaming image block that indicates the start of
+    image content.
     """
 
     format: str
     """
-    The format of the image data that will be streamed in subsequent delta events.
+    The format of the image data that will be streamed in subsequent delta
+    events.
     """
 
     def serialize(self, serializer: ShapeSerializer):
@@ -12891,9 +12873,7 @@ class ContentBlockStartToolResult:
 
 @dataclass
 class ContentBlockStartImage:
-    """
-    The initial event indicating the start of a streaming image block.
-    """
+    """The initial event indicating the start of a streaming image block."""
 
     value: ImageBlockStart
 
