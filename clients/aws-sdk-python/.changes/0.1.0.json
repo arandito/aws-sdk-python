@@ -1,0 +1,8 @@
+{
+  "changes": [
+    {
+      "type": "dependency",
+      "description": "Pin `bedrock_runtime` optional dependency group to `aws_sdk_bedrock_runtime==0.1.0`."
+    }
+  ]
+}

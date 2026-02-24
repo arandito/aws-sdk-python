@@ -1,0 +1,8 @@
+{
+  "changes": [
+    {
+      "type": "feature",
+      "description": "Initial release for aws-sdk-python. Includes an optional dependency for bedrock_runtime."
+    }
+  ]
+}
