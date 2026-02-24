@@ -31,7 +31,7 @@ This is the preferred mechanism to give feedback so that other users can engage 
 
 ## Security
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+See [CONTRIBUTING](https://github.com/awslabs/aws-sdk-python/blob/develop/CONTRIBUTING.md#security-issue-notifications) for more information.
 
 ## License
 

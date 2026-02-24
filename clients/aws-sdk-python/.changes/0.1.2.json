@@ -1,0 +1,8 @@
+{
+  "changes": [
+    {
+      "type": "dependency",
+      "description": "Add optional dependency on `aws-sdk-transcribe-streaming==0.1.0`."
+    }
+  ]
+}

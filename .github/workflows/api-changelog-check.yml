@@ -1,0 +1,70 @@
+name: API Changelog Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    paths:
+      - 'codegen/aws-models/**'
+
+permissions:
+  contents: read
+
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Get changed model files
+        id: changed-models
+        run: |
+          changed_models=$(git diff --name-only origin/${GITHUB_BASE_REF}...HEAD -- 'codegen/aws-models/*.json' | xargs -I {} basename {} .json)
+          echo "models<<EOF" >> $GITHUB_OUTPUT
+          echo "$changed_models" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Check for changelog entries
+        run: |
+          missing_changelogs=""
+
+          while IFS= read -r service; do
+            [ -z "$service" ] && continue
+
+            changelog_dir="clients/aws-sdk-${service}/.changes/next-release"
+
+            if [ ! -d "$changelog_dir" ]; then
+              missing_changelogs="${missing_changelogs}\n  - ${service} (directory does not exist: ${changelog_dir})"
+              continue
+            fi
+
+            # Check for valid changelog JSON files with required fields
+            valid_entry_found=false
+            for file in "$changelog_dir"/*.json; do
+              [ -e "$file" ] || continue
+              if jq -e '.type == "api-change" and .description' "$file" > /dev/null 2>&1; then
+                valid_entry_found=true
+                break
+              fi
+            done
+
+            if [ "$valid_entry_found" = false ]; then
+              missing_changelogs="${missing_changelogs}\n  - ${service} (no valid changelog entry in ${changelog_dir})"
+            fi
+          done <<< "${STEPS_CHANGED_MODELS_OUTPUTS_MODELS}"
+
+          if [ -n "$missing_changelogs" ]; then
+            printf "::error::Missing changelog entries for the following services:%b\n" "$missing_changelogs"
+            echo ""
+            echo "Please add a changelog entry in clients/aws-sdk-<service>/.changes/next-release/ for each modified model."
+            echo "Entry must be a JSON file with 'type: \"api-change\"' and 'description' fields."
+            exit 1
+          fi
+
+          echo "All modified models have corresponding changelog entries."
+        env:
+          STEPS_CHANGED_MODELS_OUTPUTS_MODELS: ${{ steps.changed-models.outputs.models }}

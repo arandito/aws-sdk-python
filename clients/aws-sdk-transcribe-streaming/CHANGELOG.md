@@ -1,12 +1,14 @@
 # Changelog
 
-## Unreleased
+## v0.4.0
 
-* None yet.
+### Enhancements
+* Re-generated with smithy-python 0.3.0
+* Update package docstrings from Sphinx style to Google style for improved readability and consistency with Python community standards. ([#48](https://github.com/awslabs/aws-sdk-python/pull/48))
 
 ## v0.3.0
 
-### Breaking
+### Breaking Changes
 * Function signature for `resolve_retry_strategy` has been changed to prevent unnecessary code duplication in operation methods. This will affect all 0.3.0 clients.
 
 ### Dependencies
@@ -19,7 +21,7 @@
 * This release adds support for additional locales in AWS transcribe streaming.
 
 ### Enhancements
-* Add Standard Retry Mode
+* Add Standard Retry Mode.
 
 ### Dependencies
 * **Updated**: `smithy_aws_core[eventstream, json]` from `~=0.1.0` to `~=0.2.0`.

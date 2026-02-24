@@ -32,7 +32,8 @@ logger = logging.getLogger(__name__)
 
 
 class ServiceError(ModeledError):
-    """Base error for all errors in the service.
+    """
+    Base error for all errors in the service.
 
     Some exceptions do not extend from this class, including
     synthetic, implicit, and shared exception types.
@@ -41,16 +42,12 @@ class ServiceError(ModeledError):
 
 @dataclass(kw_only=True)
 class InputValidationError(ServiceError):
-    """
-    The input fails to satisfy the constraints specified by an AWS service.
-    """
+    """The input fails to satisfy the constraints specified by an AWS service."""
 
     fault: Literal["client", "server"] | None = "client"
 
     error_code: str | None = None
-    """
-    Error code.
-    """
+    """Error code."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_INPUT_VALIDATION_ERROR, self)
@@ -96,16 +93,14 @@ class InputValidationError(ServiceError):
 @dataclass(kw_only=True)
 class InternalServerError(ServiceError):
     """
-    The request processing has failed because of an unknown error, exception or
-    failure.
+    The request processing has failed because of an unknown error, exception
+    or failure.
     """
 
     fault: Literal["client", "server"] | None = "server"
 
     error_code: str | None = None
-    """
-    Error code.
-    """
+    """Error code."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_INTERNAL_SERVER_ERROR, self)
@@ -150,9 +145,7 @@ class InternalServerError(ServiceError):
 
 @dataclass(kw_only=True)
 class InternalStreamFailure(ServiceError):
-    """
-    Internal stream failure that occurs during streaming.
-    """
+    """Internal stream failure that occurs during streaming."""
 
     fault: Literal["client", "server"] | None = "server"
 
@@ -189,30 +182,25 @@ class InternalStreamFailure(ServiceError):
 
 @dataclass(kw_only=True)
 class RequestPayloadPart:
-    """
-    Request payload part structure.
-    """
+    """Request payload part structure."""
 
     bytes_: bytes | None = field(repr=False, default=None)
-    """
-    The payload bytes.
-    """
+    """The payload bytes."""
 
     data_type: str | None = None
     """
-    Data type header. Can be one of these possible values: "UTF8", "BINARY".
+    Data type header. Can be one of these possible values: \"UTF8\",
+    \"BINARY\".
     """
 
     completion_state: str | None = None
     """
-    Completion state header. Can be one of these possible values: "PARTIAL",
-    "COMPLETE".
+    Completion state header. Can be one of these possible values:
+    \"PARTIAL\", \"COMPLETE\".
     """
 
     p: str | None = None
-    """
-    Padding string for alignment.
-    """
+    """Padding string for alignment."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_REQUEST_PAYLOAD_PART, self)
@@ -276,9 +264,7 @@ class RequestPayloadPart:
 
 @dataclass
 class RequestStreamEventPayloadPart:
-    """
-    Payload part event.
-    """
+    """Payload part event."""
 
     value: RequestPayloadPart
 
@@ -297,7 +283,8 @@ class RequestStreamEventPayloadPart:
 
 @dataclass
 class RequestStreamEventUnknown:
-    """Represents an unknown variant.
+    """
+    Represents an unknown variant.
 
     If you receive this value, you will need to update your library to receive the
     parsed value.
@@ -319,10 +306,7 @@ class RequestStreamEventUnknown:
 
 
 RequestStreamEvent = Union[RequestStreamEventPayloadPart | RequestStreamEventUnknown]
-
-"""
-Request stream event union.
-"""
+"""Request stream event union."""
 
 
 class _RequestStreamEventDeserializer:
@@ -357,25 +341,19 @@ class _RequestStreamEventDeserializer:
 
 @dataclass(kw_only=True)
 class InvokeEndpointWithBidirectionalStreamInput:
+    """Dataclass for InvokeEndpointWithBidirectionalStreamInput structure."""
+
     endpoint_name: str | None = None
-    """
-    The name of the endpoint to invoke.
-    """
+    """The name of the endpoint to invoke."""
 
     target_variant: str | None = None
-    """
-    Target variant for the request.
-    """
+    """Target variant for the request."""
 
     model_invocation_path: str | None = None
-    """
-    Model invocation path.
-    """
+    """Model invocation path."""
 
     model_query_string: str | None = None
-    """
-    Model query string.
-    """
+    """Model query string."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(
@@ -464,16 +442,12 @@ class InvokeEndpointWithBidirectionalStreamInput:
 
 @dataclass(kw_only=True)
 class ModelStreamError(ServiceError):
-    """
-    Model stream error that occurs during streaming.
-    """
+    """Model stream error that occurs during streaming."""
 
     fault: Literal["client", "server"] | None = "client"
 
     error_code: str | None = None
-    """
-    Error code.
-    """
+    """Error code."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_MODEL_STREAM_ERROR, self)
@@ -518,30 +492,25 @@ class ModelStreamError(ServiceError):
 
 @dataclass(kw_only=True)
 class ResponsePayloadPart:
-    """
-    Response payload part structure.
-    """
+    """Response payload part structure."""
 
     bytes_: bytes | None = field(repr=False, default=None)
-    """
-    The payload bytes.
-    """
+    """The payload bytes."""
 
     data_type: str | None = None
     """
-    Data type header. Can be one of these possible values: "UTF8", "BINARY".
+    Data type header. Can be one of these possible values: \"UTF8\",
+    \"BINARY\".
     """
 
     completion_state: str | None = None
     """
-    Completion state header. Can be one of these possible values: "PARTIAL",
-    "COMPLETE".
+    Completion state header. Can be one of these possible values:
+    \"PARTIAL\", \"COMPLETE\".
     """
 
     p: str | None = None
-    """
-    Padding string for alignment.
-    """
+    """Padding string for alignment."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_RESPONSE_PAYLOAD_PART, self)
@@ -605,9 +574,7 @@ class ResponsePayloadPart:
 
 @dataclass
 class ResponseStreamEventPayloadPart:
-    """
-    Payload part event.
-    """
+    """Payload part event."""
 
     value: ResponsePayloadPart
 
@@ -626,9 +593,7 @@ class ResponseStreamEventPayloadPart:
 
 @dataclass
 class ResponseStreamEventModelStreamError:
-    """
-    Model stream error event.
-    """
+    """Model stream error event."""
 
     value: ModelStreamError
 
@@ -647,9 +612,7 @@ class ResponseStreamEventModelStreamError:
 
 @dataclass
 class ResponseStreamEventInternalStreamFailure:
-    """
-    Internal stream failure event.
-    """
+    """Internal stream failure event."""
 
     value: InternalStreamFailure
 
@@ -668,7 +631,8 @@ class ResponseStreamEventInternalStreamFailure:
 
 @dataclass
 class ResponseStreamEventUnknown:
-    """Represents an unknown variant.
+    """
+    Represents an unknown variant.
 
     If you receive this value, you will need to update your library to receive the
     parsed value.
@@ -695,10 +659,7 @@ ResponseStreamEvent = Union[
     | ResponseStreamEventInternalStreamFailure
     | ResponseStreamEventUnknown
 ]
-
-"""
-Response stream event union.
-"""
+"""Response stream event union."""
 
 
 class _ResponseStreamEventDeserializer:
@@ -741,10 +702,10 @@ class _ResponseStreamEventDeserializer:
 
 @dataclass(kw_only=True)
 class InvokeEndpointWithBidirectionalStreamOutput:
+    """Dataclass for InvokeEndpointWithBidirectionalStreamOutput structure."""
+
     invoked_production_variant: str | None = None
-    """
-    The invoked production variant.
-    """
+    """The invoked production variant."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(
@@ -788,31 +749,21 @@ class InvokeEndpointWithBidirectionalStreamOutput:
 
 @dataclass(kw_only=True)
 class ModelError(ServiceError):
-    """
-    An error occurred while processing the model.
-    """
+    """An error occurred while processing the model."""
 
     fault: Literal["client", "server"] | None = "client"
 
     original_status_code: int | None = None
-    """
-    HTTP status code returned by model.
-    """
+    """HTTP status code returned by model."""
 
     original_message: str | None = None
-    """
-    Original error message from the model.
-    """
+    """Original error message from the model."""
 
     log_stream_arn: str | None = None
-    """
-    CloudWatch log stream ARN.
-    """
+    """CloudWatch log stream ARN."""
 
     error_code: str | None = None
-    """
-    Error code.
-    """
+    """Error code."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_MODEL_ERROR, self)
@@ -888,16 +839,12 @@ class ModelError(ServiceError):
 
 @dataclass(kw_only=True)
 class ServiceUnavailableError(ServiceError):
-    """
-    The request has failed due to a temporary failure of the server.
-    """
+    """The request has failed due to a temporary failure of the server."""
 
     fault: Literal["client", "server"] | None = "server"
 
     error_code: str | None = None
-    """
-    Error code.
-    """
+    """Error code."""
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_SERVICE_UNAVAILABLE_ERROR, self)

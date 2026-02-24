@@ -1,15 +1,17 @@
 # Changelog
 
-## Unreleased
+## v0.4.0
 
-* None yet.
+### Enhancements
+* Update package docstrings from Sphinx style to Google style for improved readability and consistency with Python community standards. ([#48](https://github.com/awslabs/aws-sdk-python/pull/48))
+* Re-generated with smithy-python 0.3.0
 
 ## v0.3.0
 
-This release proceeds 0.1.0. There is no 0.2.0 as the initial release was intended to be inline
+This release follows 0.1.0. There is no 0.2.0 as the initial release was intended to be inline
 with the `smithy-aws-core` version used in the client.
 
-### Breaking
+### Breaking Changes
 * Function signature for `resolve_retry_strategy` has been changed to prevent unnecessary code duplication in operation methods. This will affect all 0.3.0 clients.
 
 ### Dependencies

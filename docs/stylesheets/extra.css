@@ -1,0 +1,14 @@
+/* Custom breadcrumb styling */
+.breadcrumb {
+    font-size: 0.85em;
+    color: var(--md-default-fg-color--light);
+} 
+
+p:has(span.breadcrumb) {
+  margin-top: 0;
+}
+
+/* Light mode - use dark logo */
+[data-md-color-scheme="default"] .md-header__button.md-logo img {
+  content: url('../assets/aws-logo-dark.svg');
+}
