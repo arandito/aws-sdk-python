@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.4.0
+
+### API Changes
+* Added support for extended prompt caching with one hour TTL.
+* Added support for structured outputs to Converse and ConverseStream APIs.
+
+### Enhancements
+* Re-generated with smithy-python 0.3.0
+* Update package docstrings from Sphinx style to Google style for improved readability and consistency with Python community standards. ([#48](https://github.com/awslabs/aws-sdk-python/pull/48))
+
 ## v0.3.0
 
 ### API Changes

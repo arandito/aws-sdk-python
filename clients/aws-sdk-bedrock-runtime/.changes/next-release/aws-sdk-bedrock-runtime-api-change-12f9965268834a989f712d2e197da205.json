@@ -1,4 +1,0 @@
-{
-  "type": "api-change",
-  "description": "Added support for extended prompt caching with one hour TTL."
-}

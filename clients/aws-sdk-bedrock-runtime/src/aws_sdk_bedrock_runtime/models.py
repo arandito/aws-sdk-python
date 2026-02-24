@@ -28,6 +28,7 @@ from ._private.schemas import (
     AUTO_TOOL_CHOICE as _SCHEMA_AUTO_TOOL_CHOICE,
     BIDIRECTIONAL_INPUT_PAYLOAD_PART as _SCHEMA_BIDIRECTIONAL_INPUT_PAYLOAD_PART,
     BIDIRECTIONAL_OUTPUT_PAYLOAD_PART as _SCHEMA_BIDIRECTIONAL_OUTPUT_PAYLOAD_PART,
+    CACHE_DETAIL as _SCHEMA_CACHE_DETAIL,
     CACHE_POINT_BLOCK as _SCHEMA_CACHE_POINT_BLOCK,
     CITATION as _SCHEMA_CITATION,
     CITATIONS_CONFIG as _SCHEMA_CITATIONS_CONFIG,
@@ -136,6 +137,7 @@ from ._private.schemas import (
     INVOKE_MODEL_WITH_RESPONSE_STREAM as _SCHEMA_INVOKE_MODEL_WITH_RESPONSE_STREAM,
     INVOKE_MODEL_WITH_RESPONSE_STREAM_INPUT as _SCHEMA_INVOKE_MODEL_WITH_RESPONSE_STREAM_INPUT,
     INVOKE_MODEL_WITH_RESPONSE_STREAM_OUTPUT as _SCHEMA_INVOKE_MODEL_WITH_RESPONSE_STREAM_OUTPUT,
+    JSON_SCHEMA_DEFINITION as _SCHEMA_JSON_SCHEMA_DEFINITION,
     LIST_ASYNC_INVOKES as _SCHEMA_LIST_ASYNC_INVOKES,
     LIST_ASYNC_INVOKES_INPUT as _SCHEMA_LIST_ASYNC_INVOKES_INPUT,
     LIST_ASYNC_INVOKES_OUTPUT as _SCHEMA_LIST_ASYNC_INVOKES_OUTPUT,
@@ -146,6 +148,9 @@ from ._private.schemas import (
     MODEL_NOT_READY_EXCEPTION as _SCHEMA_MODEL_NOT_READY_EXCEPTION,
     MODEL_STREAM_ERROR_EXCEPTION as _SCHEMA_MODEL_STREAM_ERROR_EXCEPTION,
     MODEL_TIMEOUT_EXCEPTION as _SCHEMA_MODEL_TIMEOUT_EXCEPTION,
+    OUTPUT_CONFIG as _SCHEMA_OUTPUT_CONFIG,
+    OUTPUT_FORMAT as _SCHEMA_OUTPUT_FORMAT,
+    OUTPUT_FORMAT_STRUCTURE as _SCHEMA_OUTPUT_FORMAT_STRUCTURE,
     PAYLOAD_PART as _SCHEMA_PAYLOAD_PART,
     PERFORMANCE_CONFIGURATION as _SCHEMA_PERFORMANCE_CONFIGURATION,
     PROMPT_ROUTER_TRACE as _SCHEMA_PROMPT_ROUTER_TRACE,
@@ -6142,6 +6147,13 @@ class AudioBlock:
         return kwargs
 
 
+class CacheTTL(StrEnum):
+    """Time-to-live duration for ephemeral cache entries"""
+
+    FIVE_MINUTES = "5m"
+    ONE_HOUR = "1h"
+
+
 class CachePointType(StrEnum):
     DEFAULT = "default"
 
@@ -6156,11 +6168,20 @@ class CachePointBlock:
     type: str
     """Specifies the type of cache point within the CachePointBlock."""
 
+    ttl: str | None = None
+    """
+    Optional TTL duration for cache entries. When specified, enables
+    extended TTL caching with the specified duration. When omitted, uses
+    `type` value for caching behavior.
+    """
+
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_CACHE_POINT_BLOCK, self)
 
     def serialize_members(self, serializer: ShapeSerializer):
         serializer.write_string(_SCHEMA_CACHE_POINT_BLOCK.members["type"], self.type)
+        if self.ttl is not None:
+            serializer.write_string(_SCHEMA_CACHE_POINT_BLOCK.members["ttl"], self.ttl)
 
     @classmethod
     def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
@@ -6175,6 +6196,11 @@ class CachePointBlock:
                 case 0:
                     kwargs["type"] = de.read_string(
                         _SCHEMA_CACHE_POINT_BLOCK.members["type"]
+                    )
+
+                case 1:
+                    kwargs["ttl"] = de.read_string(
+                        _SCHEMA_CACHE_POINT_BLOCK.members["ttl"]
                     )
 
                 case _:
@@ -9393,6 +9419,247 @@ def _deserialize_messages(
     return result
 
 
+@dataclass(kw_only=True)
+class JsonSchemaDefinition:
+    """JSON schema structured output format options."""
+
+    schema: str
+    """
+    The JSON schema to constrain the model's output. For more information,
+    see [JSON Schema
+    Reference](https://json-schema.org/understanding-json-schema/reference).
+    """
+
+    name: str | None = None
+    """The name of the JSON schema."""
+
+    description: str | None = None
+    """A description of the JSON schema."""
+
+    def serialize(self, serializer: ShapeSerializer):
+        serializer.write_struct(_SCHEMA_JSON_SCHEMA_DEFINITION, self)
+
+    def serialize_members(self, serializer: ShapeSerializer):
+        serializer.write_string(
+            _SCHEMA_JSON_SCHEMA_DEFINITION.members["schema"], self.schema
+        )
+        if self.name is not None:
+            serializer.write_string(
+                _SCHEMA_JSON_SCHEMA_DEFINITION.members["name"], self.name
+            )
+
+        if self.description is not None:
+            serializer.write_string(
+                _SCHEMA_JSON_SCHEMA_DEFINITION.members["description"], self.description
+            )
+
+    @classmethod
+    def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
+        return cls(**cls.deserialize_kwargs(deserializer))
+
+    @classmethod
+    def deserialize_kwargs(cls, deserializer: ShapeDeserializer) -> dict[str, Any]:
+        kwargs: dict[str, Any] = {}
+
+        def _consumer(schema: Schema, de: ShapeDeserializer) -> None:
+            match schema.expect_member_index():
+                case 0:
+                    kwargs["schema"] = de.read_string(
+                        _SCHEMA_JSON_SCHEMA_DEFINITION.members["schema"]
+                    )
+
+                case 1:
+                    kwargs["name"] = de.read_string(
+                        _SCHEMA_JSON_SCHEMA_DEFINITION.members["name"]
+                    )
+
+                case 2:
+                    kwargs["description"] = de.read_string(
+                        _SCHEMA_JSON_SCHEMA_DEFINITION.members["description"]
+                    )
+
+                case _:
+                    logger.debug("Unexpected member schema: %s", schema)
+
+        deserializer.read_struct(_SCHEMA_JSON_SCHEMA_DEFINITION, consumer=_consumer)
+        return kwargs
+
+
+@dataclass
+class OutputFormatStructureJsonSchema:
+    """A JSON schema structure that the model's output must adhere to."""
+
+    value: JsonSchemaDefinition
+
+    def serialize(self, serializer: ShapeSerializer):
+        serializer.write_struct(_SCHEMA_OUTPUT_FORMAT_STRUCTURE, self)
+
+    def serialize_members(self, serializer: ShapeSerializer):
+        serializer.write_struct(
+            _SCHEMA_OUTPUT_FORMAT_STRUCTURE.members["jsonSchema"], self.value
+        )
+
+    @classmethod
+    def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
+        return cls(value=JsonSchemaDefinition.deserialize(deserializer))
+
+
+@dataclass
+class OutputFormatStructureUnknown:
+    """
+    Represents an unknown variant.
+
+    If you receive this value, you will need to update your library to receive the
+    parsed value.
+
+    This value may not be deliberately sent.
+    """
+
+    tag: str
+
+    def serialize(self, serializer: ShapeSerializer):
+        raise SerializationError("Unknown union variants may not be serialized.")
+
+    def serialize_members(self, serializer: ShapeSerializer):
+        raise SerializationError("Unknown union variants may not be serialized.")
+
+    @classmethod
+    def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
+        raise NotImplementedError()
+
+
+OutputFormatStructure = Union[
+    OutputFormatStructureJsonSchema | OutputFormatStructureUnknown
+]
+"""The structure that the model's output must adhere to."""
+
+
+class _OutputFormatStructureDeserializer:
+    _result: OutputFormatStructure | None = None
+
+    def deserialize(self, deserializer: ShapeDeserializer) -> OutputFormatStructure:
+        self._result = None
+        deserializer.read_struct(_SCHEMA_OUTPUT_FORMAT_STRUCTURE, self._consumer)
+
+        if self._result is None:
+            raise SerializationError(
+                "Unions must have exactly one value, but found none."
+            )
+
+        return self._result
+
+    def _consumer(self, schema: Schema, de: ShapeDeserializer) -> None:
+        match schema.expect_member_index():
+            case 0:
+                self._set_result(OutputFormatStructureJsonSchema.deserialize(de))
+
+            case _:
+                logger.debug("Unexpected member schema: %s", schema)
+
+    def _set_result(self, value: OutputFormatStructure) -> None:
+        if self._result is not None:
+            raise SerializationError(
+                "Unions must have exactly one value, but found more than one."
+            )
+        self._result = value
+
+
+class OutputFormatType(StrEnum):
+    """
+    The type of structured output format. Available options are:
+    json_schema.
+    """
+
+    JSON_SCHEMA = "json_schema"
+
+
+@dataclass(kw_only=True)
+class OutputFormat:
+    """Structured output parameters to control the model's response."""
+
+    type: str
+    """The type of structured output format."""
+
+    structure: OutputFormatStructure = field(repr=False)
+    """The structure that the model's output must adhere to."""
+
+    def serialize(self, serializer: ShapeSerializer):
+        serializer.write_struct(_SCHEMA_OUTPUT_FORMAT, self)
+
+    def serialize_members(self, serializer: ShapeSerializer):
+        serializer.write_string(_SCHEMA_OUTPUT_FORMAT.members["type"], self.type)
+        serializer.write_struct(
+            _SCHEMA_OUTPUT_FORMAT.members["structure"], self.structure
+        )
+
+    @classmethod
+    def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
+        return cls(**cls.deserialize_kwargs(deserializer))
+
+    @classmethod
+    def deserialize_kwargs(cls, deserializer: ShapeDeserializer) -> dict[str, Any]:
+        kwargs: dict[str, Any] = {}
+
+        def _consumer(schema: Schema, de: ShapeDeserializer) -> None:
+            match schema.expect_member_index():
+                case 0:
+                    kwargs["type"] = de.read_string(
+                        _SCHEMA_OUTPUT_FORMAT.members["type"]
+                    )
+
+                case 1:
+                    kwargs["structure"] = (
+                        _OutputFormatStructureDeserializer().deserialize(de)
+                    )
+
+                case _:
+                    logger.debug("Unexpected member schema: %s", schema)
+
+        deserializer.read_struct(_SCHEMA_OUTPUT_FORMAT, consumer=_consumer)
+        return kwargs
+
+
+@dataclass(kw_only=True)
+class OutputConfig:
+    """
+    Output configuration for a model response in a call to
+    [Converse](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html)
+    or
+    [ConverseStream](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ConverseStream.html).
+    """
+
+    text_format: OutputFormat | None = None
+    """Structured output parameters to control the model's text response."""
+
+    def serialize(self, serializer: ShapeSerializer):
+        serializer.write_struct(_SCHEMA_OUTPUT_CONFIG, self)
+
+    def serialize_members(self, serializer: ShapeSerializer):
+        if self.text_format is not None:
+            serializer.write_struct(
+                _SCHEMA_OUTPUT_CONFIG.members["textFormat"], self.text_format
+            )
+
+    @classmethod
+    def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
+        return cls(**cls.deserialize_kwargs(deserializer))
+
+    @classmethod
+    def deserialize_kwargs(cls, deserializer: ShapeDeserializer) -> dict[str, Any]:
+        kwargs: dict[str, Any] = {}
+
+        def _consumer(schema: Schema, de: ShapeDeserializer) -> None:
+            match schema.expect_member_index():
+                case 0:
+                    kwargs["text_format"] = OutputFormat.deserialize(de)
+
+                case _:
+                    logger.debug("Unexpected member schema: %s", schema)
+
+        deserializer.read_struct(_SCHEMA_OUTPUT_CONFIG, consumer=_consumer)
+        return kwargs
+
+
 class PerformanceConfigLatency(StrEnum):
     STANDARD = "standard"
     OPTIMIZED = "optimized"
@@ -10162,6 +10429,9 @@ class ToolSpecification:
     description: str | None = None
     """The description for the tool."""
 
+    strict: bool | None = None
+    """Flag to enable structured output enforcement on a tool usage response."""
+
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_TOOL_SPECIFICATION, self)
 
@@ -10175,6 +10445,10 @@ class ToolSpecification:
         serializer.write_struct(
             _SCHEMA_TOOL_SPECIFICATION.members["inputSchema"], self.input_schema
         )
+        if self.strict is not None:
+            serializer.write_boolean(
+                _SCHEMA_TOOL_SPECIFICATION.members["strict"], self.strict
+            )
 
     @classmethod
     def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
@@ -10199,6 +10473,11 @@ class ToolSpecification:
                 case 2:
                     kwargs["input_schema"] = _ToolInputSchemaDeserializer().deserialize(
                         de
+                    )
+
+                case 3:
+                    kwargs["strict"] = de.read_boolean(
+                        _SCHEMA_TOOL_SPECIFICATION.members["strict"]
                     )
 
                 case _:
@@ -10531,6 +10810,9 @@ class ConverseInput:
     request.
     """
 
+    output_config: OutputConfig | None = None
+    """Output configuration for a model response."""
+
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_CONVERSE_INPUT, self)
 
@@ -10603,6 +10885,11 @@ class ConverseInput:
                 _SCHEMA_CONVERSE_INPUT.members["serviceTier"], self.service_tier
             )
 
+        if self.output_config is not None:
+            serializer.write_struct(
+                _SCHEMA_CONVERSE_INPUT.members["outputConfig"], self.output_config
+            )
+
     @classmethod
     def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
         return cls(**cls.deserialize_kwargs(deserializer))
@@ -10669,6 +10956,9 @@ class ConverseInput:
 
                 case 11:
                     kwargs["service_tier"] = ServiceTier.deserialize(de)
+
+                case 12:
+                    kwargs["output_config"] = OutputConfig.deserialize(de)
 
                 case _:
                     logger.debug("Unexpected member schema: %s", schema)
@@ -11075,6 +11365,75 @@ class ConverseTrace:
 
 
 @dataclass(kw_only=True)
+class CacheDetail:
+    """Cache creation metrics for a specific TTL duration"""
+
+    ttl: str
+    """TTL duration for these cached tokens"""
+
+    input_tokens: int
+    """Number of tokens written to cache with this TTL (cache creation tokens)"""
+
+    def serialize(self, serializer: ShapeSerializer):
+        serializer.write_struct(_SCHEMA_CACHE_DETAIL, self)
+
+    def serialize_members(self, serializer: ShapeSerializer):
+        serializer.write_string(_SCHEMA_CACHE_DETAIL.members["ttl"], self.ttl)
+        serializer.write_integer(
+            _SCHEMA_CACHE_DETAIL.members["inputTokens"], self.input_tokens
+        )
+
+    @classmethod
+    def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
+        return cls(**cls.deserialize_kwargs(deserializer))
+
+    @classmethod
+    def deserialize_kwargs(cls, deserializer: ShapeDeserializer) -> dict[str, Any]:
+        kwargs: dict[str, Any] = {}
+
+        def _consumer(schema: Schema, de: ShapeDeserializer) -> None:
+            match schema.expect_member_index():
+                case 0:
+                    kwargs["ttl"] = de.read_string(_SCHEMA_CACHE_DETAIL.members["ttl"])
+
+                case 1:
+                    kwargs["input_tokens"] = de.read_integer(
+                        _SCHEMA_CACHE_DETAIL.members["inputTokens"]
+                    )
+
+                case _:
+                    logger.debug("Unexpected member schema: %s", schema)
+
+        deserializer.read_struct(_SCHEMA_CACHE_DETAIL, consumer=_consumer)
+        return kwargs
+
+
+def _serialize_cache_details_list(
+    serializer: ShapeSerializer, schema: Schema, value: list[CacheDetail]
+) -> None:
+    member_schema = schema.members["member"]
+    with serializer.begin_list(schema, len(value)) as ls:
+        for e in value:
+            ls.write_struct(member_schema, e)
+
+
+def _deserialize_cache_details_list(
+    deserializer: ShapeDeserializer, schema: Schema
+) -> list[CacheDetail]:
+    result: list[CacheDetail] = []
+
+    def _read_value(d: ShapeDeserializer):
+        if d.is_null():
+            d.read_null()
+
+        else:
+            result.append(CacheDetail.deserialize(d))
+
+    deserializer.read_list(schema, _read_value)
+    return result
+
+
+@dataclass(kw_only=True)
 class TokenUsage:
     """The tokens used in a message API inference call."""
 
@@ -11092,6 +11451,12 @@ class TokenUsage:
 
     cache_write_input_tokens: int | None = None
     """The number of input tokens written to the cache for the request."""
+
+    cache_details: list[CacheDetail] | None = None
+    """
+    Detailed breakdown of cache writes by TTL. Empty if no cache creation
+    occurred. Sorted by TTL duration (1h before 5m).
+    """
 
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_TOKEN_USAGE, self)
@@ -11116,6 +11481,13 @@ class TokenUsage:
             serializer.write_integer(
                 _SCHEMA_TOKEN_USAGE.members["cacheWriteInputTokens"],
                 self.cache_write_input_tokens,
+            )
+
+        if self.cache_details is not None:
+            _serialize_cache_details_list(
+                serializer,
+                _SCHEMA_TOKEN_USAGE.members["cacheDetails"],
+                self.cache_details,
             )
 
     @classmethod
@@ -11151,6 +11523,11 @@ class TokenUsage:
                 case 4:
                     kwargs["cache_write_input_tokens"] = de.read_integer(
                         _SCHEMA_TOKEN_USAGE.members["cacheWriteInputTokens"]
+                    )
+
+                case 5:
+                    kwargs["cache_details"] = _deserialize_cache_details_list(
+                        de, _SCHEMA_TOKEN_USAGE.members["cacheDetails"]
                     )
 
                 case _:
@@ -11701,6 +12078,9 @@ class ConverseStreamInput:
     request.
     """
 
+    output_config: OutputConfig | None = None
+    """Output configuration for a model response."""
+
     def serialize(self, serializer: ShapeSerializer):
         serializer.write_struct(_SCHEMA_CONVERSE_STREAM_INPUT, self)
 
@@ -11779,6 +12159,12 @@ class ConverseStreamInput:
                 _SCHEMA_CONVERSE_STREAM_INPUT.members["serviceTier"], self.service_tier
             )
 
+        if self.output_config is not None:
+            serializer.write_struct(
+                _SCHEMA_CONVERSE_STREAM_INPUT.members["outputConfig"],
+                self.output_config,
+            )
+
     @classmethod
     def deserialize(cls, deserializer: ShapeDeserializer) -> Self:
         return cls(**cls.deserialize_kwargs(deserializer))
@@ -11849,6 +12235,9 @@ class ConverseStreamInput:
 
                 case 11:
                     kwargs["service_tier"] = ServiceTier.deserialize(de)
+
+                case 12:
+                    kwargs["output_config"] = OutputConfig.deserialize(de)
 
                 case _:
                     logger.debug("Unexpected member schema: %s", schema)
