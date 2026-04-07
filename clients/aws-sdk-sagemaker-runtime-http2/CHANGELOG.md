@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.0
+
+### Dependencies
+* Bump `smithy-core` from `~=0.3.0` to `~=0.4.0`.
+* Bump `smithy-http` from `~=0.3.0` to `~=0.4.0`.
+* Bump `smithy-aws-core` from `~=0.4.0` to `~=0.5.0`.
+
 ## v0.4.0
 
 ### Enhancements

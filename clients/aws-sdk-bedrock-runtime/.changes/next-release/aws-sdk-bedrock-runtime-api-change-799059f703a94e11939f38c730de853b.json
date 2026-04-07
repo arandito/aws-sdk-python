@@ -1,4 +1,0 @@
-{
-  "type": "api-change",
-  "description": "Relax ToolUseId pattern to allow dots and colons"
-}

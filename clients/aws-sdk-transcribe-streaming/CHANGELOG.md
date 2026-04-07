@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.0
+
+### API Changes
+* AWS Transcribe Streaming now supports specifying a resumption window for the stream through the SessionResumeWindow parameter, allowing customers to reconnect to their streams for a longer duration beyond stream start time.
+
+### Dependencies
+* Bump `smithy-core` from `~=0.3.0` to `~=0.4.0`.
+* Bump `smithy-http` from `~=0.3.0` to `~=0.4.0`.
+* Bump `smithy-aws-core` from `~=0.4.0` to `~=0.5.0`.
+
 ## v0.4.0
 
 ### Enhancements
