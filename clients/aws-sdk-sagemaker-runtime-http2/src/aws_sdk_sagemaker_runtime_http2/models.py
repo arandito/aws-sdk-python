@@ -914,4 +914,12 @@ INVOKE_ENDPOINT_WITH_BIDIRECTIONAL_STREAM = APIOperation(
         }
     ),
     effective_auth_schemes=[ShapeID("aws.auth#sigv4")],
+    error_schemas=[
+        _SCHEMA_INPUT_VALIDATION_ERROR,
+        _SCHEMA_INTERNAL_SERVER_ERROR,
+        _SCHEMA_INTERNAL_STREAM_FAILURE,
+        _SCHEMA_MODEL_ERROR,
+        _SCHEMA_MODEL_STREAM_ERROR,
+        _SCHEMA_SERVICE_UNAVAILABLE_ERROR,
+    ],
 )
