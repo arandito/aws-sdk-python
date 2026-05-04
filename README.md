@@ -1,4 +1,5 @@
 ## AWS SDK for Python
+
 [![Apache 2 licensed][apache-badge]][apache-url]
 
 [apache-badge]: https://img.shields.io/badge/license-APACHE2-blue.svg
@@ -37,3 +38,4 @@ See [CONTRIBUTING](https://github.com/awslabs/aws-sdk-python/blob/develop/CONTRI
 
 This project is licensed under the Apache-2.0 License.
 
+TESTING BRANCH PROTECTION
