@@ -10,19 +10,26 @@ from pathlib import Path
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
+# Directories holding releasable packages: generated service clients and
+# hand-written runtime packages.
+PACKAGE_ROOT_DIRS = ("clients", "packages")
 
-def validate_package_name(package_name: str) -> None:
-    """Validate that the package exists in the clients directory."""
-    package_path = PROJECT_ROOT_DIR / "clients" / package_name
-    if not package_path.exists():
-        print(
-            f"Error: Package '{package_name}' not found in clients directory",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+
+def find_package_dir(package_name: str) -> Path:
+    """Find a package directory, searching each of the package roots in order."""
+    for root in PACKAGE_ROOT_DIRS:
+        package_path = PROJECT_ROOT_DIR / root / package_name
+        if package_path.is_dir():
+            return package_path
+
+    searched = ", ".join(f"{root}/" for root in PACKAGE_ROOT_DIRS)
+    print(
+        f"Error: Package '{package_name}' not found in {searched}",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 def get_package_changes_dir(package_name: str) -> Path:
     """Get the .changes directory for a package."""
-    validate_package_name(package_name)
-    return PROJECT_ROOT_DIR / "clients" / package_name / ".changes"
+    return find_package_dir(package_name) / ".changes"
