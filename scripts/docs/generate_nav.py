@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # scripts/docs/generate_nav.py
 """
 Generate client documentation navigation dynamically.
