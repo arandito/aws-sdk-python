@@ -1,7 +1,26 @@
 DOCS_PORT ?= 8000
 PYTHON_VERSION := 3.12
 
-.PHONY: docs docs-serve docs-clean docs-install docs-lock venv
+.PHONY: build-py check-py docs docs-serve docs-clean docs-install docs-lock \
+	install lint-py test-py venv
+
+install:
+	uv sync --all-packages --all-extras
+
+lint-py:
+	uv run ruff check packages --fix --config pyproject.toml
+	uv run ruff format packages --config pyproject.toml
+
+check-py:
+	uv run ruff check packages --config pyproject.toml
+	uv run ruff format --check packages --config pyproject.toml
+	uv run pyright packages
+
+test-py:
+	uv run pytest packages
+
+build-py:
+	uv build --all-packages
 
 venv:
 	uv venv --python $(PYTHON_VERSION)
@@ -17,11 +36,11 @@ docs-clean:
 	rm -rf site docs/clients
 
 docs-generate:
-	uv run python scripts/docs/generate_all_doc_stubs.py
-	uv run python scripts/docs/generate_nav.py
+	uv run --no-sync python scripts/docs/generate_all_doc_stubs.py
+	uv run --no-sync python scripts/docs/generate_nav.py
 
 docs: docs-generate
-	uv run zensical build
+	uv run --no-sync zensical build
 
 docs-serve:
 	@[ -d site ] || $(MAKE) docs
