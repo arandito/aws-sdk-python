@@ -5,8 +5,9 @@
 from pathlib import Path
 
 from smithy_aws_core.identity import EnvironmentCredentialsResolver
+from smithy_http.aio.interfaces import HTTPClient
 
-from aws_sdk_bedrock_runtime.client import BedrockRuntimeClient
+from aws_sdk_bedrock_runtime.client import AsyncBedrockRuntimeClient
 from aws_sdk_bedrock_runtime.config import AsyncBedrockRuntimeConfig
 
 MODEL_ID = "global.amazon.nova-2-lite-v1:0"
@@ -15,12 +16,15 @@ MESSAGE = "Who created the Python programming language?"
 AUDIO_FILE = Path(__file__).parent / "assets" / "test.pcm"
 
 
-async def create_bedrock_client(region: str) -> BedrockRuntimeClient:
-    """Helper to create a BedrockRuntimeClient for a given region."""
-    return BedrockRuntimeClient(
-        config=await AsyncBedrockRuntimeConfig.resolve(
-            endpoint_uri=f"https://bedrock-runtime.{region}.amazonaws.com",
-            region=region,
-            aws_credentials_identity_resolver=EnvironmentCredentialsResolver(),
-        )
+async def create_bedrock_client(
+    region: str, *, transport: HTTPClient | None = None
+) -> AsyncBedrockRuntimeClient:
+    """Helper to create an AsyncBedrockRuntimeClient for a given region."""
+    config = await AsyncBedrockRuntimeConfig.resolve(
+        endpoint_uri=f"https://bedrock-runtime.{region}.amazonaws.com",
+        region=region,
+        aws_credentials_identity_resolver=EnvironmentCredentialsResolver(),
     )
+    if transport is not None:
+        config.transport = transport
+    return AsyncBedrockRuntimeClient(config=config)
