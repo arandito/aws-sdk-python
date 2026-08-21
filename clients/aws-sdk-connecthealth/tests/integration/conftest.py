@@ -15,7 +15,7 @@ from typing import Any
 import boto3
 import pytest
 
-from aws_sdk_connecthealth.client import ConnectHealthClient
+from aws_sdk_connecthealth.client import AsyncConnectHealthClient
 from aws_sdk_connecthealth.models import (
     CreateDomainInput,
     CreateSubscriptionInput,
@@ -36,7 +36,7 @@ _SUBSCRIPTION_POLL_TIMEOUT_SECONDS = 300
 
 
 async def _wait_for_subscription_inactive(
-    client: ConnectHealthClient, domain_id: str, subscription_id: str
+    client: AsyncConnectHealthClient, domain_id: str, subscription_id: str
 ) -> None:
     """Wait for a Subscription to report INACTIVE.
 
@@ -64,7 +64,7 @@ async def _wait_for_subscription_inactive(
 
 
 async def _create_connecthealth_resources(
-    client: ConnectHealthClient, domain_name: str
+    client: AsyncConnectHealthClient, domain_name: str
 ) -> tuple[str, str]:
     """Create a ConnectHealth Domain and an ACTIVE Subscription.
 
@@ -87,7 +87,7 @@ async def _create_connecthealth_resources(
 
 
 async def _delete_connecthealth_resources(
-    client: ConnectHealthClient, domain_id: str | None, subscription_id: str | None
+    client: AsyncConnectHealthClient, domain_id: str | None, subscription_id: str | None
 ) -> None:
     """Deactivate the Subscription, then delete the Domain.
 
@@ -165,5 +165,8 @@ async def connecthealth_resources():
         output_s3_uri = f"s3://{bucket_name}/clinical-notes/"
         yield domain_id, subscription_id, output_s3_uri
     finally:
-        await _delete_connecthealth_resources(client, domain_id, subscription_id)
+        try:
+            await _delete_connecthealth_resources(client, domain_id, subscription_id)
+        finally:
+            await client.close()
         _delete_s3_bucket(s3_client, bucket_name)

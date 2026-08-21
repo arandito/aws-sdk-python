@@ -215,4 +215,7 @@ async def qbusiness_app():
         )
         yield application_id
     finally:
-        await _delete_qbusiness_app(client, application_id)
+        try:
+            await _delete_qbusiness_app(client, application_id)
+        finally:
+            await client.close()

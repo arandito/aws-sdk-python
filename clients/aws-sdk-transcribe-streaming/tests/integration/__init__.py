@@ -4,19 +4,23 @@
 from pathlib import Path
 
 from smithy_aws_core.identity import EnvironmentCredentialsResolver
+from smithy_http.aio.interfaces import HTTPClient
 
-from aws_sdk_transcribe_streaming.client import TranscribeStreamingClient
+from aws_sdk_transcribe_streaming.client import AsyncTranscribeStreamingClient
 from aws_sdk_transcribe_streaming.config import AsyncTranscribeStreamingConfig
 
 AUDIO_FILE = Path(__file__).parent / "assets" / "test.wav"
 
 
-async def create_transcribe_client(region: str) -> TranscribeStreamingClient:
-    """Helper to create a TranscribeStreamingClient for a given region."""
-    return TranscribeStreamingClient(
+async def create_transcribe_client(
+    region: str, *, transport: HTTPClient | None = None
+) -> AsyncTranscribeStreamingClient:
+    """Helper to create an AsyncTranscribeStreamingClient for a given region."""
+    return AsyncTranscribeStreamingClient(
         config=await AsyncTranscribeStreamingConfig.resolve(
             endpoint_uri=f"https://transcribestreaming.{region}.amazonaws.com",
             region=region,
             aws_credentials_identity_resolver=EnvironmentCredentialsResolver(),
+            transport=transport,
         )
     )

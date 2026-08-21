@@ -4,20 +4,24 @@
 from pathlib import Path
 
 from smithy_aws_core.identity import EnvironmentCredentialsResolver
+from smithy_http.aio.interfaces import HTTPClient
 
-from aws_sdk_connecthealth.client import ConnectHealthClient
+from aws_sdk_connecthealth.client import AsyncConnectHealthClient
 from aws_sdk_connecthealth.config import AsyncConnectHealthConfig, Plugin
 
 REGION = "us-east-1"
 AUDIO_FILE = Path(__file__).parent / "assets" / "test.wav"
 
 
-async def create_connecthealth_client(region: str) -> ConnectHealthClient:
-    return ConnectHealthClient(
+async def create_connecthealth_client(
+    region: str, *, transport: HTTPClient | None = None
+) -> AsyncConnectHealthClient:
+    return AsyncConnectHealthClient(
         config=await AsyncConnectHealthConfig.resolve(
             endpoint_uri=f"https://health-agent.{region}.api.aws",
             region=region,
             aws_credentials_identity_resolver=EnvironmentCredentialsResolver(),
+            transport=transport,
         )
     )
 
