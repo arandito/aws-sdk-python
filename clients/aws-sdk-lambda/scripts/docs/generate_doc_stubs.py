@@ -450,6 +450,14 @@ class DocStubGenerator:
         lines = [
             f"# {self.service_name}",
             "",
+            "## Installation",
+            "",
+            f"To install the {self.service_name} client:",
+            "",
+            "```bash",
+            f"python -m pip install {client_info.package_name.replace('_', '-')}",
+            "```",
+            "",
             "## Client",
             "",
             *self._mkdocs_directive(
